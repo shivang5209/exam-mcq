@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizForge — Smart MCQ Exam Companion</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- App Container -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header class="main-header">
+      <div class="header-logo" id="logo-btn">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        </div>
+        <span class="logo-text">QuizForge</span>
+      </div>
+      <div class="header-actions">
+        <button id="import-export-btn" class="btn btn-secondary btn-icon-only" title="Export/Import Data">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: DASHBOARD                          -->
+      <!-- ========================================== -->
+      <section id="view-dashboard" class="app-view active">
+        <div class="view-header">
+          <div>
+            <h1 class="view-title">My Projects</h1>
+            <p class="view-subtitle">Organize your study goals, exams, and certifications</p>
+          </div>
+          <button id="create-project-btn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            New Project
+          </button>
+        </div>
+
+        <!-- Dashboard Stats Grid -->
+        <div class="stats-bar">
+          <div class="stat-card">
+            <div class="stat-num" id="stat-projects-count">0</div>
+            <div class="stat-label">Total Projects</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-chapters-count">0</div>
+            <div class="stat-label">Chapters Created</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="stat-questions-count">0</div>
+            <div class="stat-label">Questions Loaded</div>
+          </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div id="projects-grid" class="projects-grid">
+          <!-- Populated by JS -->
+          <div class="empty-state" id="dashboard-empty-state">
+            <div class="empty-icon">📂</div>
+            <h3>No projects yet</h3>
+            <p>Create a project to start organizing your revision cards and MCQ questions.</p>
+            <button class="btn btn-primary btn-sm" onclick="app.showCreateProjectModal()">Create Project</button>
+          </div>
+        </div>
+
+        <!-- Quiz History Section -->
+        <div class="card history-card-panel">
+          <div class="card-header">
+            <h2>Recent Test History</h2>
+            <button id="btn-clear-history" class="btn btn-ghost btn-sm btn-danger" style="display: none;">Clear History</button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="history-table" id="history-table" style="display: none;">
+                <thead>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Project / Chapter</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th>Time Spent</th>
+                    <th>Mode</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+              <div class="empty-state-small" id="history-empty-state">
+                <p>No tests taken yet. Launch a quiz to start tracking your performance history!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: PROJECT DETAIL                     -->
+      <!-- ========================================== -->
+      <section id="view-project" class="app-view">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item" id="project-nav-back">← Back to Dashboard</span>
+        </div>
+
+        <div class="view-header">
+          <div>
+            <div class="title-with-actions">
+              <h1 class="view-title" id="project-detail-title">Project Name</h1>
+              <button id="rename-project-btn" class="btn btn-ghost btn-sm" title="Rename Project">✏️</button>
+              <button id="delete-project-btn" class="btn btn-ghost btn-sm btn-danger" title="Delete Project">🗑️</button>
+            </div>
+            <p class="view-subtitle" id="project-detail-desc">Study chapters and question collection</p>
+          </div>
+          <button id="create-chapter-btn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Chapter
+          </button>
+        </div>
+
+        <!-- Chapters List Container -->
+        <div class="chapters-container">
+          <div id="chapters-list" class="chapters-list">
+            <!-- Populated by JS -->
+          </div>
+          <div class="empty-state" id="project-empty-state" style="display: none;">
+            <div class="empty-icon">📖</div>
+            <h3>No chapters in this project</h3>
+            <p>Chapters help divide large subjects into manageable units like chapters, units, or modules.</p>
+            <button class="btn btn-primary btn-sm" id="project-empty-create-chapter">Create Chapter</button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: CHAPTER DETAIL                     -->
+      <!-- ========================================== -->
+      <section id="view-chapter" class="app-view">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item" id="chapter-nav-project">Project Name</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item active" id="chapter-nav-current">Chapter Name</span>
+        </div>
+
+        <div class="view-header">
+          <div>
+            <div class="title-with-actions">
+              <h1 class="view-title" id="chapter-detail-title">Chapter Name</h1>
+              <button id="rename-chapter-btn" class="btn btn-ghost btn-sm" title="Rename Chapter">✏️</button>
+              <button id="delete-chapter-btn" class="btn btn-ghost btn-sm btn-danger" title="Delete Chapter">🗑️</button>
+            </div>
+            <p class="view-subtitle" id="chapter-question-count">0 Questions loaded</p>
+          </div>
+          
+          <div class="chapter-actions-top">
+            <button id="btn-start-quiz" class="btn btn-accent btn-large" disabled>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="btn-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Start Quiz
+            </button>
+          </div>
+        </div>
+
+        <!-- Split View: Left Column (Add/Upload Qs), Right Column (Loaded Qs list) -->
+        <div class="chapter-layout">
+          
+          <!-- Column 1: Parser / Input Panel -->
+          <div class="chapter-col-input">
+            <div class="card panel-card">
+              <div class="card-header">
+                <h2>Import Questions</h2>
+              </div>
+              <div class="card-body">
+                <div class="tab-buttons">
+                  <button class="tab-btn active" data-tab="tab-paste">Paste Plain Text</button>
+                  <button class="tab-btn" data-tab="tab-upload">Upload .TXT</button>
+                </div>
+
+                <!-- Tab: Paste Plain Text -->
+                <div id="tab-paste" class="tab-content active">
+                  <div class="form-group">
+                    <label for="raw-mcq-input">Format Rules for MCQ questions:</label>
+                    <pre class="format-guide">
+Supports Q: prefixes OR standard numbers:
+
+1. What is the CPU word size in 8051?
+a) 4-bit
+b) 8-bit
+c) 16-bit
+d) 32-bit
+Correct Answer: B
+
+Q: Which register works as program counter?
+A. PC
+B. DPTR
+ANS: A</pre>
+                    <textarea id="raw-mcq-input" rows="12" placeholder="Paste your questions here using the format above..." class="form-control text-mono"></textarea>
+                  </div>
+                  <button id="btn-parse-paste" class="btn btn-primary btn-block">⚡ Parse &amp; Auto-Import</button>
+                  <div id="paste-parse-status" class="upload-status-info"></div>
+                </div>
+
+                <!-- Tab: Upload TXT -->
+                <div id="tab-upload" class="tab-content">
+                  <div class="upload-zone" id="drop-zone">
+                    <div class="upload-icon">📄</div>
+                    <p>Drag & drop your <strong>.txt</strong> file here or click to browse</p>
+                    <input type="file" id="file-input" accept=".txt" style="display: none;">
+                    <button class="btn btn-secondary btn-sm" id="btn-browse-file">Browse Files</button>
+                  </div>
+                  <div id="upload-status" class="upload-status-info"></div>
+                  <p class="parser-auto-note">🤖 Smart parser will auto-correct common formatting issues</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Question List Panel -->
+          <div class="chapter-col-list">
+            <div class="card panel-card flex-col">
+              <div class="card-header list-header">
+                <h2>Questions in this Chapter</h2>
+                <button id="btn-clear-questions" class="btn btn-outline-danger btn-sm" style="display: none;">Clear All</button>
+              </div>
+              <div class="card-body scrollable flex-grow">
+                <div id="questions-list" class="questions-list-view">
+                  <!-- Loaded questions list generated by JS -->
+                  <div class="empty-state-small">
+                    <p>No questions imported yet. Use the parser panel on the left to add questions.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 4: QUIZ ENGINE                        -->
+      <!-- ========================================== -->
+      <section id="view-quiz" class="app-view">
+        <div class="quiz-header-bar">
+          <div class="quiz-info-meta">
+            <span class="quiz-badge" id="quiz-meta-title">Microcontrollers / Unit 1</span>
+            <span class="quiz-progress-text" id="quiz-progress-text">Question 1 of 10</span>
+          </div>
+          <button id="btn-quit-quiz" class="btn btn-outline-danger btn-sm">Quit Quiz</button>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-bar-container">
+          <div id="quiz-progress-bar" class="progress-bar-fill" style="width: 10%;"></div>
+        </div>
+
+        <div class="quiz-workspace">
+          
+          <!-- Configuration Panel (Shown at start before first question) -->
+          <div id="quiz-config-panel" class="quiz-config-card card">
+            <h2>Quiz Settings</h2>
+            <div class="config-options">
+              <div class="form-group-flex">
+                <label>Timer Settings</label>
+                <select id="config-timer" class="form-control-select">
+                  <option value="0">No Timer (Relaxed)</option>
+                  <option value="15">15 Seconds per Question</option>
+                  <option value="30" selected>30 Seconds per Question</option>
+                  <option value="60">60 Seconds per Question</option>
+                </select>
+              </div>
+
+              <div class="form-group-flex">
+                <label>Question Options</label>
+                <div class="checkbox-row">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="config-shuffle" checked>
+                    <span class="slider"></span>
+                    Shuffle Question Order
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group-flex">
+                <label>Study Mode</label>
+                <select id="config-mode" class="form-control-select">
+                  <option value="quiz" selected>Quiz Mode (Immediate correction & reveal)</option>
+                  <option value="exam">Exam Mode (Show correctness only at the very end)</option>
+                </select>
+              </div>
+            </div>
+            
+            <button id="btn-launch-quiz-session" class="btn btn-accent btn-block btn-large">Start Session</button>
+          </div>
+
+          <!-- Active Question Workspace -->
+          <div id="quiz-active-workspace" style="display: none;">
+            
+            <!-- Quiz Timer & Status -->
+            <div class="quiz-timer-bar">
+              <div class="timer-display" id="quiz-timer-display" style="display: none;">
+                <span class="timer-icon">⏳</span>
+                <span class="timer-seconds" id="timer-seconds">30</span>s
+              </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="question-display-card">
+              <div class="q-number" id="quiz-question-number">Question #1</div>
+              <h2 class="q-text" id="quiz-question-text">Loading question text...</h2>
+            </div>
+
+            <!-- Answers Grid -->
+            <div class="options-grid" id="quiz-options-container">
+              <!-- Dynamically populated options buttons -->
+            </div>
+
+            <!-- Quiz Controls -->
+            <div class="quiz-controls-row">
+              <div class="feedback-hint" id="quiz-feedback-text">Select an option to check your answer.</div>
+              <button id="btn-next-question" class="btn btn-primary" style="display: none;">Next Question →</button>
+              <button id="btn-submit-exam-answer" class="btn btn-primary" style="display: none;">Confirm & Next →</button>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 5: RESULTS VIEW                       -->
+      <!-- ========================================== -->
+      <section id="view-results" class="app-view">
+        <div class="results-layout">
+          
+          <!-- Results Score Ring Card -->
+          <div class="card result-card">
+            <div class="card-body center-content">
+              <h1 class="result-title">Quiz Completed!</h1>
+              
+              <!-- SVG Radial Score Tracker -->
+              <div class="score-ring-container">
+                <svg class="score-ring" viewBox="0 0 120 120">
+                  <circle class="score-ring-bg" cx="60" cy="60" r="50"></circle>
+                  <circle class="score-ring-fill" id="results-ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+                </svg>
+                <div class="score-text">
+                  <span class="score-percentage" id="results-percent">80%</span>
+                  <span class="score-ratio" id="results-ratio">8/10</span>
+                </div>
+              </div>
+
+              <div class="results-stats-row">
+                <div class="result-stat-item">
+                  <span class="color-success" id="results-correct-count">8</span>
+                  <label>Correct</label>
+                </div>
+                <div class="result-stat-item">
+                  <span class="color-danger" id="results-wrong-count">2</span>
+                  <label>Incorrect</label>
+                </div>
+                <div class="result-stat-item">
+                  <span id="results-time-elapsed">01:45</span>
+                  <label>Time Spent</label>
+                </div>
+              </div>
+
+              <div class="results-actions">
+                <button id="btn-restart-quiz" class="btn btn-primary">Retake Full Quiz</button>
+                <button id="btn-retake-wrong" class="btn btn-accent" style="display: none;">Retake Incorrect Only</button>
+                <button id="btn-results-back" class="btn btn-secondary">Back to Chapter</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Review Answers Accordion list -->
+          <div class="card review-card flex-col">
+            <div class="card-header">
+              <h2>Review Answers</h2>
+            </div>
+            <div class="card-body scrollable flex-grow">
+              <div id="results-review-list" class="review-list">
+                <!-- Javascript builds the questions list with user vs correct marker -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL DIALOGS                              -->
+  <!-- ========================================== -->
+
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+
+  <!-- Create Project Modal -->
+  <div class="modal" id="modal-create-project">
+    <div class="modal-header">
+      <h2>Create New Project</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="project-name-input">Project Name</label>
+        <input type="text" id="project-name-input" class="form-control" placeholder="e.g. Microcontroller Exam, AWS Cloud Practitioner">
+      </div>
+      <div class="form-group">
+        <label for="project-desc-input">Description (Optional)</label>
+        <input type="text" id="project-desc-input" class="form-control" placeholder="e.g. Exam on June 25th, covering hardware architecture">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-project">Create Project</button>
+    </div>
+  </div>
+
+  <!-- Create Chapter Modal -->
+  <div class="modal" id="modal-create-chapter">
+    <div class="modal-header">
+      <h2>Add New Chapter</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="chapter-name-input">Chapter / Unit Title</label>
+        <input type="text" id="chapter-name-input" class="form-control" placeholder="e.g. Unit 1: Hardware Architecture">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-chapter">Add Chapter</button>
+    </div>
+  </div>
+
+  <!-- Rename Dialog (Generic) -->
+  <div class="modal" id="modal-rename">
+    <div class="modal-header">
+      <h2 id="rename-modal-title">Rename</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="rename-input" id="rename-input-label">New Name</label>
+        <input type="text" id="rename-input" class="form-control" placeholder="">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-rename">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- Export/Import Data Modal -->
+  <div class="modal" id="modal-import-export">
+    <div class="modal-header">
+      <h2>Backup & Portability</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 1.2rem; font-size: 0.9rem; opacity: 0.85;">
+        Export all your projects, chapters, and questions to a single JSON file. You can load this backup onto other devices.
+      </p>
+      
+      <div class="backup-actions">
+        <button id="btn-export-backup" class="btn btn-primary btn-block">
+          📥 Download JSON Backup
+        </button>
+      </div>
+      
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+      
+      <div class="form-group">
+        <label>Import backup file (.json):</label>
+        <div class="file-import-row">
+          <input type="file" id="backup-file-input" accept=".json" class="form-control-file">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-block" onclick="app.closeModals()">Close</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Javascript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
