@@ -135,6 +135,12 @@ body {
   margin-bottom: 2rem;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .header-logo {
   display: flex;
   align-items: center;
