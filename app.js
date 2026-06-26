@@ -12,6 +12,13 @@ const state = {
   activeProjectId: null,
   activeChapterId: null,
   
+  // Firebase & Rooms State
+  firebaseUser: null,
+  activeRoomId: null,
+  participantName: '',
+  isParticipantMode: false,
+  leaderboardUnsubscribe: null,
+
   // Quiz Session State
   quiz: {
     questions: [],        // Questions selected for the active quiz
@@ -69,6 +76,10 @@ const Storage = {
 // ==========================================
 function generateUUID() {
   return 'uuid-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now().toString(36);
+}
+
+function generateRoomId() {
+  return Math.random().toString(36).substr(2, 6).toUpperCase();
 }
 
 function showToast(message, type = 'success') {
@@ -499,9 +510,18 @@ const app = {
   init() {
     Storage.load();
     this.bindEvents();
-    this.renderDashboard();
-    this.showView('view-dashboard');
-    this.updateStats();
+    this.initFirebase();
+
+    // Check if loading a shared quiz room
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    if (roomId) {
+      this.joinRoom(roomId);
+    } else {
+      this.renderDashboard();
+      this.showView('view-dashboard');
+      this.updateStats();
+    }
   },
 
   // Navigation / View Router
@@ -514,6 +534,112 @@ const app = {
       targetView.classList.add('active');
     }
     window.scrollTo(0, 0);
+  },
+
+  initFirebase() {
+    if (!window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) {
+      document.getElementById('btn-login-trigger').style.display = 'none';
+      return;
+    }
+
+    const authObj = window.FirebaseConfig.getAuth();
+
+    // Show Sign In button
+    document.getElementById('btn-login-trigger').style.display = 'inline-flex';
+    // Show Share Room button in chapters
+    document.getElementById('btn-share-room').style.display = 'inline-flex';
+
+    // Listen for Auth changes
+    authObj.onAuthStateChanged(user => {
+      if (user) {
+        state.firebaseUser = user;
+        document.getElementById('btn-login-trigger').style.display = 'none';
+        document.getElementById('user-profile-menu').style.display = 'flex';
+        document.getElementById('user-email-display').textContent = user.email;
+        showToast(`Signed in as ${user.email}`);
+      } else {
+        state.firebaseUser = null;
+        document.getElementById('btn-login-trigger').style.display = 'inline-flex';
+        document.getElementById('user-profile-menu').style.display = 'none';
+      }
+      
+      // Sync chapter state if open
+      if (state.activeProjectId && state.activeChapterId) {
+        this.syncChapterRoomState();
+      }
+    });
+  },
+
+  async joinRoom(roomId) {
+    this.showView('view-join-room');
+    document.getElementById('join-room-title').textContent = "Loading Room...";
+    document.getElementById('join-room-desc').textContent = "Fetching quiz details from server...";
+    document.getElementById('join-room-meta').style.display = 'none';
+    document.getElementById('join-room-setup').style.display = 'none';
+
+    if (!window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) {
+      document.getElementById('join-room-title').textContent = "Connection Error";
+      document.getElementById('join-room-desc').textContent = "Firebase is not configured on this host. Please check configuration.";
+      return;
+    }
+
+    try {
+      const dbObj = window.FirebaseConfig.getDb();
+      const doc = await dbObj.collection('rooms').doc(roomId).get();
+      if (!doc.exists) {
+        document.getElementById('join-room-title').textContent = "Room Not Found";
+        document.getElementById('join-room-desc').textContent = "This room doesn't exist or has been closed by the host.";
+        return;
+      }
+
+      const roomData = doc.data();
+      state.activeRoomId = roomId;
+      state.isParticipantMode = true;
+      
+      // Setup Room Details
+      document.getElementById('join-room-title').textContent = roomData.title;
+      document.getElementById('join-room-desc').textContent = roomData.description || "Take this shared MCQ quiz and submit your results!";
+      document.getElementById('join-room-q-count').textContent = roomData.questions.length;
+      document.getElementById('join-room-owner').textContent = roomData.ownerEmail.split('@')[0];
+      
+      document.getElementById('join-room-meta').style.display = 'flex';
+      document.getElementById('join-room-setup').style.display = 'block';
+
+      // Setup the quiz questions directly in session state
+      state.quiz.questions = roomData.questions;
+
+    } catch (error) {
+      console.error("Error joining room:", error);
+      document.getElementById('join-room-title').textContent = "Load Failed";
+      document.getElementById('join-room-desc').textContent = "Failed to communicate with database: " + error.message;
+    }
+  },
+
+  joinRoomQuiz() {
+    const name = document.getElementById('participant-name-input').value.trim();
+    if (!name) {
+      showToast("Please enter a nickname", "danger");
+      return;
+    }
+
+    state.participantName = name;
+    
+    // Default participant settings: 30s timer, shuffled questions, quiz mode
+    state.quiz.settings.timer = 30;
+    state.quiz.settings.shuffle = true;
+    state.quiz.settings.mode = 'quiz';
+    
+    this.initializeQuizSequence();
+  },
+
+  leaveRoom() {
+    state.isParticipantMode = false;
+    state.activeRoomId = null;
+    state.participantName = '';
+    // Reset search params in URL
+    window.history.pushState({}, document.title, window.location.pathname);
+    this.renderDashboard();
+    this.showView('view-dashboard');
   },
 
   // ==========================================
@@ -661,11 +787,11 @@ const app = {
     });
 
     document.getElementById('btn-results-back').addEventListener('click', () => {
-      this.openChapter(state.activeProjectId, state.activeChapterId);
-    });
-
-    document.getElementById('btn-results-back').addEventListener('click', () => {
-      this.openChapter(state.activeProjectId, state.activeChapterId);
+      if (state.isParticipantMode) {
+        this.showView('view-join-room');
+      } else {
+        this.openChapter(state.activeProjectId, state.activeChapterId);
+      }
     });
 
     // Import/Export Modal Trigger
@@ -683,6 +809,104 @@ const app = {
 
     document.getElementById('btn-clear-history').addEventListener('click', () => {
       this.handleClearHistory();
+    });
+
+    // Auth Tab switches
+    const tabSignin = document.getElementById('auth-tab-signin');
+    const tabSignup = document.getElementById('auth-tab-signup');
+    const formSignin = document.getElementById('auth-form-signin');
+    const formSignup = document.getElementById('auth-form-signup');
+
+    tabSignin.addEventListener('click', () => {
+      tabSignin.classList.add('active');
+      tabSignup.classList.remove('active');
+      formSignin.classList.add('active');
+      formSignup.classList.remove('active');
+    });
+
+    tabSignup.addEventListener('click', () => {
+      tabSignup.classList.add('active');
+      tabSignin.classList.remove('active');
+      formSignup.classList.add('active');
+      formSignin.classList.remove('active');
+    });
+
+    // Login Modal Triggers
+    document.getElementById('btn-login-trigger').addEventListener('click', () => {
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('register-email').value = '';
+      document.getElementById('register-password').value = '';
+      this.openModal('modal-auth');
+    });
+
+    // Auth Submission Handlers
+    document.getElementById('btn-auth-signin').addEventListener('click', () => {
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+      if (!email || !pass) {
+        showToast("Please enter email and password", "danger");
+        return;
+      }
+      window.FirebaseConfig.getAuth().signInWithEmailAndPassword(email, pass)
+        .then(() => this.closeModals())
+        .catch(err => showToast(err.message, "danger"));
+    });
+
+    document.getElementById('btn-auth-signup').addEventListener('click', () => {
+      const email = document.getElementById('register-email').value.trim();
+      const pass = document.getElementById('register-password').value;
+      if (!email || pass.length < 6) {
+        showToast("Email required, password must be at least 6 characters", "danger");
+        return;
+      }
+      window.FirebaseConfig.getAuth().createUserWithEmailAndPassword(email, pass)
+        .then(() => this.closeModals())
+        .catch(err => showToast(err.message, "danger"));
+    });
+
+    document.getElementById('btn-auth-google').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      window.FirebaseConfig.getAuth().signInWithPopup(provider)
+        .then(() => this.closeModals())
+        .catch(err => showToast(err.message, "danger"));
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      window.FirebaseConfig.getAuth().signOut()
+        .then(() => {
+          showToast("Logged out successfully");
+          this.closeModals();
+          this.showView('view-dashboard');
+          this.renderDashboard();
+        })
+        .catch(err => showToast(err.message, "danger"));
+    });
+
+    // Share & Close Room Triggers
+    document.getElementById('btn-share-room').addEventListener('click', () => {
+      this.publishRoom();
+    });
+
+    document.getElementById('btn-close-room').addEventListener('click', () => {
+      this.closeRoom();
+    });
+
+    document.getElementById('btn-copy-share-url').addEventListener('click', () => {
+      const copyText = document.getElementById('share-room-url');
+      copyText.select();
+      copyText.setSelectionRange(0, 99999);
+      navigator.clipboard.writeText(copyText.value);
+      showToast("Share link copied to clipboard!");
+    });
+
+    // Participant Room Actions
+    document.getElementById('btn-enter-room').addEventListener('click', () => {
+      this.joinRoomQuiz();
+    });
+
+    document.getElementById('btn-leave-room').addEventListener('click', () => {
+      this.leaveRoom();
     });
   },
 
@@ -945,7 +1169,161 @@ const app = {
     // Render questions list
     this.renderQuestionsList(chapter.questions);
 
+    // Sync Shared Room & Leaderboards
+    this.syncChapterRoomState();
+
     this.showView('view-chapter');
+  },
+
+  async publishRoom() {
+    if (!state.firebaseUser) {
+      this.openModal('modal-auth');
+      showToast("Please sign in first to share a room!", "warning");
+      return;
+    }
+
+    const project = state.data.projects.find(p => p.id === state.activeProjectId);
+    const chapter = project.chapters.find(c => c.id === state.activeChapterId);
+    if (!chapter || chapter.questions.length === 0) {
+      showToast("No questions to share!", "danger");
+      return;
+    }
+
+    const dbObj = window.FirebaseConfig.getDb();
+    
+    // Check if this chapter was already published
+    let roomId = chapter.roomId;
+    if (!roomId) {
+      roomId = generateRoomId();
+      chapter.roomId = roomId;
+      Storage.save();
+    }
+
+    const roomData = {
+      roomId: roomId,
+      ownerId: state.firebaseUser.uid,
+      ownerEmail: state.firebaseUser.email,
+      title: `${project.name} - ${chapter.name}`,
+      description: project.description || "Take this shared MCQ quiz and submit your results!",
+      questions: chapter.questions,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+      showToast("Sharing room...");
+      await dbObj.collection('rooms').doc(roomId).set(roomData);
+      
+      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+      document.getElementById('share-room-url').value = shareUrl;
+      
+      this.openModal('modal-share-room');
+      this.syncChapterRoomState();
+
+    } catch (error) {
+      console.error("Error publishing room:", error);
+      showToast("Failed to share room: " + error.message, "danger");
+    }
+  },
+
+  async closeRoom() {
+    if (!confirm("Are you sure you want to close this room? Other users will no longer be able to access it.")) return;
+    const project = state.data.projects.find(p => p.id === state.activeProjectId);
+    const chapter = project.chapters.find(c => c.id === state.activeChapterId);
+    if (!chapter || !chapter.roomId) return;
+
+    const dbObj = window.FirebaseConfig.getDb();
+    try {
+      await dbObj.collection('rooms').doc(chapter.roomId).delete();
+      delete chapter.roomId;
+      Storage.save();
+      showToast("Room closed successfully!");
+      this.syncChapterRoomState();
+    } catch (error) {
+      showToast("Failed to close room: " + error.message, "danger");
+    }
+  },
+
+  syncChapterRoomState() {
+    // Unsubscribe previous listener
+    if (state.leaderboardUnsubscribe) {
+      state.leaderboardUnsubscribe();
+      state.leaderboardUnsubscribe = null;
+    }
+
+    const project = state.data.projects.find(p => p.id === state.activeProjectId);
+    if (!project) return;
+    const chapter = project.chapters.find(c => c.id === state.activeChapterId);
+    if (!chapter) return;
+
+    const shareRoomBtn = document.getElementById('btn-share-room');
+    const leaderboardEl = document.getElementById('chapter-leaderboard-panel');
+
+    if (!window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) {
+      shareRoomBtn.style.display = 'none';
+      leaderboardEl.style.display = 'none';
+      return;
+    }
+
+    shareRoomBtn.style.display = 'inline-flex';
+
+    if (chapter.roomId) {
+      shareRoomBtn.textContent = '🌐 View Room Link';
+      leaderboardEl.style.display = 'block';
+
+      // Listen to submissions in Firestore
+      const dbObj = window.FirebaseConfig.getDb();
+      state.leaderboardUnsubscribe = dbObj.collection('rooms').doc(chapter.roomId)
+        .collection('submissions')
+        .orderBy('percentage', 'desc')
+        .orderBy('timeSpent', 'asc')
+        .onSnapshot(snapshot => {
+          this.renderLeaderboard(snapshot);
+        }, err => {
+          console.error("Leaderboard error:", err);
+        });
+    } else {
+      shareRoomBtn.textContent = '🌐 Share Room';
+      leaderboardEl.style.display = 'none';
+    }
+  },
+
+  renderLeaderboard(snapshot) {
+    const tbody = document.getElementById('leaderboard-table-body');
+    const emptyState = document.getElementById('leaderboard-empty-state');
+    const table = document.getElementById('leaderboard-table');
+
+    tbody.innerHTML = '';
+    if (snapshot.empty) {
+      table.style.display = 'none';
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    table.style.display = 'table';
+    emptyState.style.display = 'none';
+
+    let rank = 1;
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const date = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
+      const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+      const row = document.createElement('tr');
+      
+      let badgeClass = 'badge-score-low';
+      if (data.percentage >= 80) badgeClass = 'badge-score-high';
+      else if (data.percentage >= 50) badgeClass = 'badge-score-mid';
+
+      row.innerHTML = `
+        <td><strong>#${rank++}</strong></td>
+        <td><strong>${this.escapeHTML(data.nickname)}</strong></td>
+        <td>${data.correct} / ${data.total}</td>
+        <td><span class="badge-score ${badgeClass}">${data.percentage}%</span></td>
+        <td>${formatTime(data.timeSpent)}</td>
+        <td>${formattedDate}</td>
+      `;
+      tbody.appendChild(row);
+    });
   },
 
   updateChapterQuestionCount(count) {
@@ -1529,23 +1907,45 @@ ANS: B</pre>
       retakeWrongBtn.style.display = 'none';
     }
 
-    // Add to test history
-    const project = state.data.projects.find(p => p.id === state.activeProjectId);
-    const chapter = project.chapters.find(c => c.id === state.activeChapterId);
-    if (project && chapter) {
-      const historyEntry = {
-        id: generateUUID(),
-        timestamp: new Date().toISOString(),
-        projectName: project.name,
-        chapterName: chapter.name,
-        correct: correct,
-        total: total,
-        percentage: scorePercent,
-        timeSpent: timeSpentSeconds,
-        mode: state.quiz.settings.mode
-      };
-      state.data.history.unshift(historyEntry);
-      Storage.save();
+    // Add to test history or upload to Firebase
+    if (state.isParticipantMode && state.activeRoomId) {
+      if (window.FirebaseConfig && window.FirebaseConfig.isInitialized()) {
+        const dbObj = window.FirebaseConfig.getDb();
+        dbObj.collection('rooms').doc(state.activeRoomId)
+          .collection('submissions').add({
+            nickname: state.participantName,
+            correct: correct,
+            total: total,
+            percentage: scorePercent,
+            timeSpent: timeSpentSeconds,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          })
+          .then(() => {
+            showToast("Score successfully submitted to room leaderboard!");
+          })
+          .catch(err => {
+            console.error("Error submitting score:", err);
+            showToast("Failed to submit score to server.", "danger");
+          });
+      }
+    } else {
+      const project = state.data.projects.find(p => p.id === state.activeProjectId);
+      const chapter = project.chapters.find(c => c.id === state.activeChapterId);
+      if (project && chapter) {
+        const historyEntry = {
+          id: generateUUID(),
+          timestamp: new Date().toISOString(),
+          projectName: project.name,
+          chapterName: chapter.name,
+          correct: correct,
+          total: total,
+          percentage: scorePercent,
+          timeSpent: timeSpentSeconds,
+          mode: state.quiz.settings.mode
+        };
+        state.data.history.unshift(historyEntry);
+        Storage.save();
+      }
     }
 
     // Build answer review list
