@@ -1592,12 +1592,14 @@ body {
 }
 
 .toast {
-  background: #182237;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-left: 4px solid var(--primary);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   padding: 1rem 1.5rem;
   box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
   font-weight: 600;
   font-size: 0.9rem;
   min-width: 280px;
@@ -2151,6 +2153,35 @@ body {
   padding: 1.5rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
+}
+
+/* ==========================================================================
+   LIGHT MODE CONTRAST OVERRIDES
+   ========================================================================== */
+.light-mode .logo-text {
+  background: linear-gradient(135deg, var(--text-primary) 40%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light-mode .btn-secondary {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.light-mode .btn-secondary:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.light-mode .form-control {
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+.light-mode .form-control:focus {
+  background: #ffffff;
 }
 
 
