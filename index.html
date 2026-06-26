@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
 
@@ -18,9 +19,7 @@
     <!-- Top Navigation Header -->
     <header class="main-header">
       <div class="header-logo" id="logo-btn">
-        <div class="logo-icon">
-          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        </div>
+        <img src="logo.png" alt="QuizForge Logo" class="logo-img" style="height: 32px; width: 32px; border-radius: var(--radius-sm); object-fit: cover;">
         <span class="logo-text">QuizForge</span>
       </div>
       <div class="header-actions">
@@ -521,7 +520,7 @@ ANS: A</pre>
       <section id="view-join-room" class="app-view">
         <div class="join-room-container card">
           <div class="center-content">
-            <div class="room-icon" style="font-size: 3rem; margin-bottom: 1rem;">🌐</div>
+            <img src="logo.png" alt="QuizForge Logo" class="room-icon" style="height: 64px; width: 64px; border-radius: var(--radius-md); margin-bottom: 1rem; object-fit: cover;">
             <h1 id="join-room-title" class="result-title">Loading Room...</h1>
             <p id="join-room-desc" class="view-subtitle">Please wait while we fetch the quiz details.</p>
             
