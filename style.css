@@ -2184,4 +2184,50 @@ body {
   background: #ffffff;
 }
 
+/* ==========================================================================
+   ACTIVE PRESENCE & LEADERBOARD PEER REVIEW STYLES
+   ========================================================================== */
+.active-user-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-color);
+  padding: 0.2rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  animation: slide-up 0.2s ease-out;
+}
+
+.presence-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--success);
+  box-shadow: 0 0 6px var(--success);
+  display: inline-block;
+}
+
+/* Interactive Leaderboard rows */
+#live-room-leaderboard-tbody tr {
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+#live-room-leaderboard-tbody tr:hover {
+  background-color: var(--bg-card-hover) !important;
+  transform: scale(1.008);
+}
+
+#live-room-leaderboard-tbody tr td {
+  transition: color var(--transition-fast);
+}
+
+#live-room-leaderboard-tbody tr:hover td {
+  color: var(--accent) !important;
+}
+
 

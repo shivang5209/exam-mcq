@@ -20,6 +20,7 @@ const state = {
   isParticipantMode: false,
   leaderboardUnsubscribe: null,
   chatUnsubscribe: null,
+  presenceUnsubscribe: null,
   activeRoomData: null,
   guestMode: false,
   theme: 'dark',
@@ -543,6 +544,11 @@ const app = {
     this.bindEvents();
     this.initFirebase();
 
+    // Clean up presence on page close/reload
+    window.addEventListener('beforeunload', () => {
+      this.exitRoomPresence();
+    });
+
     // Check if loading a shared quiz room
     const urlParams = new URLSearchParams(window.location.search);
     const roomId = urlParams.get('room');
@@ -683,6 +689,9 @@ const app = {
   },
 
   leaveRoom() {
+    // Exit presence first
+    this.exitRoomPresence();
+
     state.isParticipantMode = false;
     state.activeRoomId = null;
     state.activeRoomPassword = '';
@@ -700,6 +709,10 @@ const app = {
     if (state.leaderboardUnsubscribe) {
       state.leaderboardUnsubscribe();
       state.leaderboardUnsubscribe = null;
+    }
+    if (state.presenceUnsubscribe) {
+      state.presenceUnsubscribe();
+      state.presenceUnsubscribe = null;
     }
 
     // Reset search params in URL
@@ -2127,6 +2140,12 @@ ANS: B</pre>
             total: total,
             percentage: scorePercent,
             timeSpent: timeSpentSeconds,
+            detailedResults: state.quiz.shuffledQuestions.map((q, idx) => ({
+              text: q.text,
+              options: q.options,
+              answer: q.answer,
+              userPick: state.quiz.answers[idx] !== undefined ? state.quiz.answers[idx] : null
+            })),
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
           })
           .then(() => {
@@ -2459,6 +2478,10 @@ ANS: B</pre>
       this.syncLiveRoomDetails(roomId);
       this.syncLiveRoomChat(roomId);
       this.syncLiveRoomLeaderboard(roomId);
+      
+      // Enter presence & start presence sync
+      this.enterRoomPresence(roomId, nickname);
+      this.syncLiveRoomPresence(roomId);
 
       // Show the view
       this.showView('view-live-room');
@@ -2620,6 +2643,11 @@ ANS: B</pre>
         snapshot.forEach(doc => {
           const data = doc.data();
           const row = document.createElement('tr');
+          row.setAttribute('data-id', doc.id);
+          row.title = "Click to review detailed answers";
+          row.addEventListener('click', () => {
+            this.openPeerQuizReview(doc.id);
+          });
           
           let badgeClass = 'badge-score-low';
           if (data.percentage >= 80) badgeClass = 'badge-score-high';
@@ -2702,6 +2730,9 @@ ANS: B</pre>
   },
 
   exitLiveRoom() {
+    // Exit presence first
+    this.exitRoomPresence();
+
     // Unsubscribe from real-time feeds
     if (state.chatUnsubscribe) {
       state.chatUnsubscribe();
@@ -2715,11 +2746,16 @@ ANS: B</pre>
       state.leaderboardUnsubscribe();
       state.leaderboardUnsubscribe = null;
     }
+    if (state.presenceUnsubscribe) {
+      state.presenceUnsubscribe();
+      state.presenceUnsubscribe = null;
+    }
 
     state.activeRoomId = null;
     state.activeRoomPassword = '';
     state.activeRoomData = null;
     state.isParticipantMode = false;
+    state.participantName = '';
 
     // Reset URL
     window.history.pushState({}, document.title, window.location.pathname);
@@ -2749,6 +2785,151 @@ ANS: B</pre>
       this.exitLiveRoom();
     } catch (error) {
       showToast("Failed to delete room: " + error.message, "danger");
+    }
+  },
+
+  async enterRoomPresence(roomId, nickname) {
+    if (!window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) return;
+    const dbObj = window.FirebaseConfig.getDb();
+    try {
+      await dbObj.collection('rooms').doc(roomId)
+        .collection('presence').doc(nickname).set({
+          nickname: nickname,
+          lastActive: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (err) {
+      console.error("Presence entry failed:", err);
+    }
+  },
+
+  async exitRoomPresence() {
+    if (!state.activeRoomId || !state.participantName) return;
+    if (!window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) return;
+    const dbObj = window.FirebaseConfig.getDb();
+    try {
+      await dbObj.collection('rooms').doc(state.activeRoomId)
+        .collection('presence').doc(state.participantName).delete();
+    } catch (err) {
+      console.error("Presence exit failed:", err);
+    }
+  },
+
+  syncLiveRoomPresence(roomId) {
+    if (state.presenceUnsubscribe) {
+      state.presenceUnsubscribe();
+      state.presenceUnsubscribe = null;
+    }
+
+    const listEl = document.getElementById('live-room-active-users-list');
+    const countEl = document.getElementById('live-room-users-count');
+
+    listEl.innerHTML = '<span style="opacity: 0.6;">Loading...</span>';
+    countEl.textContent = '👥 0 Online';
+
+    const dbObj = window.FirebaseConfig.getDb();
+    state.presenceUnsubscribe = dbObj.collection('rooms').doc(roomId)
+      .collection('presence')
+      .onSnapshot(snapshot => {
+        listEl.innerHTML = '';
+        if (snapshot.empty) {
+          listEl.innerHTML = '<span style="opacity: 0.6;">None</span>';
+          countEl.textContent = '👥 0 Online';
+          return;
+        }
+
+        let count = 0;
+        snapshot.forEach(doc => {
+          count++;
+          const data = doc.data();
+          const userTag = document.createElement('span');
+          userTag.className = 'active-user-tag';
+          userTag.innerHTML = `<span class="presence-dot"></span> ${this.escapeHTML(data.nickname)}`;
+          listEl.appendChild(userTag);
+        });
+
+        countEl.textContent = `👥 ${count} Online`;
+      }, err => {
+        console.error("Presence sync error:", err);
+      });
+  },
+
+  async openPeerQuizReview(submissionId) {
+    if (!state.activeRoomId) return;
+    if (!window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) return;
+
+    showToast("Loading review details...");
+    const dbObj = window.FirebaseConfig.getDb();
+    try {
+      const doc = await dbObj.collection('rooms').doc(state.activeRoomId)
+        .collection('submissions').doc(submissionId).get();
+      
+      if (!doc.exists) {
+        showToast("Submission not found!", "danger");
+        return;
+      }
+
+      const data = doc.data();
+      if (!data.detailedResults || !Array.isArray(data.detailedResults)) {
+        showToast("Detailed answers not logged for this score.", "warning");
+        return;
+      }
+
+      // Populate summary tags
+      document.getElementById('peer-review-modal-title').textContent = `Review Answers for ${data.nickname}`;
+      
+      let badgeClass = 'badge-score-low';
+      if (data.percentage >= 80) badgeClass = 'badge-score-high';
+      else if (data.percentage >= 50) badgeClass = 'badge-score-mid';
+
+      const scoreBadge = document.getElementById('peer-review-score-badge');
+      scoreBadge.className = `badge-score ${badgeClass}`;
+      scoreBadge.textContent = `Score: ${data.correct} / ${data.total} (${data.percentage}%)`;
+      
+      // formatTime function check - formatTime might be defined globally, let's verify or use custom format inline.
+      // In app.js formatTime is defined. Yes, we saw it is in use.
+      document.getElementById('peer-review-time-badge').textContent = `Time: ${formatTime(data.timeSpent)}`;
+
+      // Populate review list
+      const list = document.getElementById('peer-review-list');
+      list.innerHTML = '';
+
+      data.detailedResults.forEach((q, idx) => {
+        const userPick = q.userPick;
+        const isCorrect = userPick === q.answer;
+
+        const card = document.createElement('div');
+        card.className = `review-item-card ${isCorrect ? 'correct-card' : 'wrong-card'}`;
+
+        let optionsListHTML = '';
+        q.options.forEach((opt, oIdx) => {
+          let statusClass = '';
+          if (oIdx === q.answer) {
+            statusClass = 'correct-choice';
+          } else if (oIdx === userPick) {
+            statusClass = 'user-choice-wrong';
+          }
+
+          optionsListHTML += `
+            <div class="review-option ${statusClass}">
+              ${String.fromCharCode(65 + oIdx)}) ${this.escapeHTML(opt)}
+            </div>
+          `;
+        });
+
+        card.innerHTML = `
+          <div class="review-q-text">${idx + 1}. ${this.escapeHTML(q.text)}</div>
+          <div class="review-options-list">
+            ${optionsListHTML}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      this.openModal('modal-peer-review');
+
+    } catch (err) {
+      console.error("Peer review loading failed:", err);
+      showToast("Failed to load peer review details: " + err.message, "danger");
     }
   }
 };
