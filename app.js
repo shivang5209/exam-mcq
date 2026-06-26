@@ -18,6 +18,7 @@ const state = {
   participantName: '',
   isParticipantMode: false,
   leaderboardUnsubscribe: null,
+  guestMode: false,
 
   // Quiz Session State
   quiz: {
@@ -518,9 +519,15 @@ const app = {
     if (roomId) {
       this.joinRoom(roomId);
     } else {
-      this.renderDashboard();
-      this.showView('view-dashboard');
-      this.updateStats();
+      // If Firebase is NOT initialized, go directly to local dashboard
+      if (!window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) {
+        this.renderDashboard();
+        this.showView('view-dashboard');
+        this.updateStats();
+      } else {
+        // Show landing page while waiting for auth status
+        this.showView('view-landing');
+      }
     }
   },
 
@@ -557,10 +564,23 @@ const app = {
         document.getElementById('user-profile-menu').style.display = 'flex';
         document.getElementById('user-email-display').textContent = user.email;
         showToast(`Signed in as ${user.email}`);
+
+        // Redirect to dashboard if currently on landing view
+        const currentActiveView = document.querySelector('.app-view.active');
+        if (!currentActiveView || currentActiveView.id === 'view-landing') {
+          this.renderDashboard();
+          this.showView('view-dashboard');
+          this.updateStats();
+        }
       } else {
         state.firebaseUser = null;
         document.getElementById('btn-login-trigger').style.display = 'inline-flex';
         document.getElementById('user-profile-menu').style.display = 'none';
+
+        // Redirect to landing page unless we are in participant mode or guest mode
+        if (!state.isParticipantMode && !state.guestMode) {
+          this.showView('view-landing');
+        }
       }
       
       // Sync chapter state if open
@@ -648,8 +668,12 @@ const app = {
   bindEvents() {
     // Logo / Brand home navigation
     document.getElementById('logo-btn').addEventListener('click', () => {
-      this.showView('view-dashboard');
-      this.renderDashboard();
+      if (state.firebaseUser || state.guestMode || !window.FirebaseConfig || !window.FirebaseConfig.isInitialized()) {
+        this.showView('view-dashboard');
+        this.renderDashboard();
+      } else {
+        this.showView('view-landing');
+      }
     });
 
     // Create Project Trigger
@@ -907,6 +931,28 @@ const app = {
 
     document.getElementById('btn-leave-room').addEventListener('click', () => {
       this.leaveRoom();
+    });
+
+    // Landing View Actions
+    document.getElementById('btn-landing-google').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      window.FirebaseConfig.getAuth().signInWithPopup(provider)
+        .then(() => this.closeModals())
+        .catch(err => showToast(err.message, "danger"));
+    });
+
+    document.getElementById('btn-landing-email-login').addEventListener('click', () => {
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      this.openModal('modal-auth');
+    });
+
+    document.getElementById('btn-landing-guest').addEventListener('click', () => {
+      state.guestMode = true;
+      this.renderDashboard();
+      this.showView('view-dashboard');
+      this.updateStats();
+      showToast("Entered offline guest mode!");
     });
   },
 
