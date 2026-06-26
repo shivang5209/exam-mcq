@@ -1988,3 +1988,140 @@ body {
   border-color: var(--primary);
 }
 
+/* ==========================================================================
+   MULTIPLAYER LIVE STUDY ROOMS STYLES
+   ========================================================================== */
+
+.room-setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .room-setup-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.room-grid-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1.3fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  align-items: stretch;
+}
+
+.room-grid-layout.has-host-panel {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 1100px) {
+  .room-grid-layout.has-host-panel {
+    grid-template-columns: 1fr 1.1fr;
+  }
+  .room-grid-layout.has-host-panel .room-host-card {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .room-grid-layout, 
+  .room-grid-layout.has-host-panel {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .room-grid-layout.has-host-panel .room-host-card {
+    grid-column: span 1;
+  }
+}
+
+/* Chat Component */
+.chat-window {
+  height: 420px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.2rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+  padding: 0.65rem 0.9rem;
+  border-radius: 14px;
+  line-height: 1.45;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+  animation: slide-up 0.25s ease-out;
+}
+
+.chat-message.incoming {
+  align-self: flex-start;
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-bottom-left-radius: 2px;
+}
+
+.chat-message.outgoing {
+  align-self: flex-end;
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  color: #fff;
+  border-bottom-right-radius: 2px;
+}
+
+.chat-message-meta {
+  font-size: 0.72rem;
+  opacity: 0.6;
+  margin-bottom: 0.25rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.chat-message-text {
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Flex layout utilities */
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+.room-header {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+
