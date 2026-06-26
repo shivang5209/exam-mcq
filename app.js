@@ -19,6 +19,7 @@ const state = {
   isParticipantMode: false,
   leaderboardUnsubscribe: null,
   guestMode: false,
+  theme: 'dark',
 
   // Quiz Session State
   quiz: {
@@ -56,6 +57,11 @@ const Storage = {
       } else {
         this.save();
       }
+
+      // Load and apply theme
+      state.theme = localStorage.getItem('quizforge_theme') || 'dark';
+      this.applyTheme(state.theme);
+
     } catch (e) {
       console.error("Failed to load data from localStorage", e);
       showToast("Error loading saved data", "danger");
@@ -69,6 +75,27 @@ const Storage = {
       console.error("Failed to save data to localStorage", e);
       showToast("Storage full or unavailable!", "danger");
     }
+  },
+
+  applyTheme(theme) {
+    const root = document.documentElement;
+    const darkIcon = document.getElementById('theme-icon-dark');
+    const lightIcon = document.getElementById('theme-icon-light');
+
+    if (theme === 'light') {
+      root.classList.add('light-mode');
+      if (darkIcon && lightIcon) {
+        darkIcon.style.display = 'inline-block';
+        lightIcon.style.display = 'none';
+      }
+    } else {
+      root.classList.remove('light-mode');
+      if (darkIcon && lightIcon) {
+        darkIcon.style.display = 'none';
+        lightIcon.style.display = 'inline-block';
+      }
+    }
+    localStorage.setItem('quizforge_theme', theme);
   }
 };
 
@@ -953,6 +980,13 @@ const app = {
       this.showView('view-dashboard');
       this.updateStats();
       showToast("Entered offline guest mode!");
+    });
+
+    // Theme Toggle Handler
+    document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      Storage.applyTheme(state.theme);
+      showToast(`Switched to ${state.theme} mode`);
     });
   },
 
