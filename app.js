@@ -2673,6 +2673,9 @@ ANS: B</pre>
       return;
     }
 
+    // Set header meta title for the room quiz
+    document.getElementById('quiz-meta-title').textContent = state.activeRoomData.title || "Study Room Quiz";
+
     // Setup quiz questions from active room
     state.quiz.questions = state.activeRoomData.questions;
 
@@ -2682,6 +2685,7 @@ ANS: B</pre>
     state.quiz.settings.mode = 'quiz';
 
     this.initializeQuizSequence();
+    this.showView('view-quiz');
   },
 
   async handleHostUpdateRoomQuiz() {
