@@ -1,0 +1,209 @@
+1. In Von Neumann cache architecture, why can performance reduce compared to Harvard architecture?
+A) Because it has no cache
+B) Because instruction and data share the same cache path
+C) Because data is stored only in registers
+D) Because main memory is not used
+ANS: B
+
+2. Harvard architecture improves performance mainly because:
+A) It removes main memory completely
+B) It separates instruction and data cache
+C) It uses only software memory
+D) It avoids processor execution
+ANS: B
+
+3. A CPU first searches data in cache. If the data is not found, this condition is called:
+A) Cache hit
+B) Cache miss
+C) Cache lock
+D) Cache overflow
+ANS: B
+
+4. Which mapping technique is fastest but may suffer more from collisions?
+A) Direct mapping
+B) Fully associative mapping
+C) Set-associative mapping
+D) Virtual mapping
+ANS: A
+
+5. In direct mapping, if cache has 8 lines, block 18 will map to which cache line?
+A) 0
+B) 1
+C) 2
+D) 3
+ANS: C
+
+6. In direct mapping with 8 cache lines, which blocks will map to cache line 3?
+A) 3, 8, 13
+B) 3, 11, 19
+C) 0, 8, 16
+D) 2, 10, 18
+ANS: B
+
+7. In a 2-way set-associative cache with 8 total lines, how many sets are present?
+A) 2
+B) 4
+C) 8
+D) 16
+ANS: B
+
+8. In a 2-way set-associative cache with 8 lines, block 10 maps to which set?
+A) Set 0
+B) Set 1
+C) Set 2
+D) Set 3
+ANS: C
+
+9. Two blocks, 0 and 8, are repeatedly accessed in a direct-mapped cache with 8 lines. What problem can occur?
+A) Both remain permanently in cache
+B) They map to different lines
+C) They repeatedly replace each other
+D) Cache becomes larger
+ANS: C
+
+10. The cache line selected for replacement is called:
+A) Source line
+B) Victim line
+C) Address line
+D) Stack line
+ANS: B
+
+11. Which replacement policy replaces cache lines cyclically?
+A) Pseudo-random
+B) Round-robin
+C) Direct mapping
+D) Logical mapping
+ANS: B
+
+12. Pseudo-random replacement differs from round-robin because:
+A) It never replaces cache lines
+B) It selects replacement in a random-like way
+C) It always selects the first line
+D) It works only with main memory
+ANS: B
+
+13. A system needs predictable cache replacement behavior. Which policy is more suitable?
+A) Round-robin
+B) Pseudo-random
+C) Random only
+D) No replacement
+ANS: A
+
+14. Cache hit rate is calculated as:
+A) (Cache misses / Total requests) * 100
+B) (Cache hits / Total requests) * 100
+C) (Total requests / Cache hits) * 100
+D) (Main memory size / Cache size) * 100
+ANS: B
+
+15. If a program has 80 cache hits out of 100 memory requests, what is the hit rate?
+A) 20%
+B) 40%
+C) 80%
+D) 100%
+ANS: C
+
+16. If cache hit rate is 75%, what is the miss rate?
+A) 15%
+B) 25%
+C) 50%
+D) 75%
+ANS: B
+
+17. A high cache miss rate usually means:
+A) CPU gets data faster
+B) More accesses go to slower main memory
+C) Cache is not needed
+D) Processor stops permanently
+ANS: B
+
+18. Thrashing in cache memory means:
+A) Cache stores only instructions
+B) Same cache location is repeatedly replaced
+C) Cache hit rate becomes 100%
+D) Main memory becomes empty
+ANS: B
+
+19. Eviction means:
+A) Adding new RAM
+B) Removing an existing cache line to bring new data
+C) Increasing cache size
+D) Dividing cache into sets
+ANS: B
+
+20. Why does cache work well for most programs?
+A) Programs never access memory
+B) Programs access completely random memory always
+C) Programs repeatedly access nearby or recently used data
+D) Cache is bigger than main memory
+ANS: C
+
+21. Physical cache uses:
+A) Logical addresses
+B) Physical addresses
+C) Only register addresses
+D) Only stack addresses
+ANS: B
+
+22. Logical cache uses:
+A) Physical addresses
+B) Virtual/logical addresses
+C) Hard disk addresses
+D) Only instruction numbers
+ANS: B
+
+23. In direct mapping, if many frequently used blocks map to the same cache line, what will happen?
+A) Hit rate increases
+B) Miss rate may increase
+C) Cache becomes set-associative automatically
+D) Main memory stops working
+ANS: B
+
+24. Set-associative mapping reduces collisions compared to direct mapping because:
+A) A block can go to any cache line in entire cache
+B) A block maps to one set but can occupy multiple possible lines inside that set
+C) It removes cache misses completely
+D) It does not use memory blocks
+ANS: B
+
+25. Which statement is correct?
+A) Direct mapping gives complete freedom to place blocks anywhere
+B) Set-associative mapping gives limited freedom inside a set
+C) Round-robin is a mapping technique
+D) Hit rate and miss rate are always equal
+ANS: B
+
+26. A cache has 16 lines and is 4-way set-associative. How many sets are there?
+A) 2
+B) 4
+C) 8
+D) 16
+ANS: B
+
+27. In a 4-way set-associative cache with 16 lines, block 21 maps to which set?
+A) Set 0
+B) Set 1
+C) Set 2
+D) Set 3
+ANS: B
+
+28. Which is the best reason for using cache memory?
+A) To permanently store all programs
+B) To reduce average memory access time
+C) To replace CPU registers
+D) To remove RAM from the system
+ANS: B
+
+29. If cache hit rate increases, system performance usually:
+A) Decreases
+B) Improves
+C) Becomes independent of memory
+D) Stops using CPU
+ANS: B
+
+30. Which of the following best compares direct and set-associative mapping?
+A) Direct mapping is flexible, set-associative is fixed
+B) Direct mapping maps to one line, set-associative maps to one set with multiple possible lines
+C) Both are exactly same
+D) Set-associative does not use cache lines
+ANS: B

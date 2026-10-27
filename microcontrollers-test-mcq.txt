@@ -1,0 +1,34 @@
+1. What is the program storage space (ROM) size in the standard 8051 microcontroller?
+a) 2 KB
+b) 4 KB
+c) 8 KB
+d) 16 KB
+Correct Answer: B
+
+2. How many 16-bit timers/counters does the standard 8051 microcontroller have?
+a. One
+b. Two
+c. Three
+d. Four
+ANS: B
+
+Q: Which of the following registers is used as the Program Status Word in 8051?
+A) DPTR
+B) SP
+C) PSW
+D) PC
+Answer: C
+
+[4] What is the word size of the 8051 microcontroller's internal RAM?
+A. 4 bits
+B. 8 bits
+C. 16 bits
+D. 32 bits
+ANS: B
+
+5) Which pin of the 8051 microcontroller is used to reset the system?
+A) RST (Pin 9)
+B) ALE (Pin 30)
+C) PSEN (Pin 29)
+D) EA (Pin 31)
+ANS: A

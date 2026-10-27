@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizForge — Smart MCQ Exam Companion</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo.png">
+</head>
+<body>
+
+  <!-- App Container -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header class="main-header">
+      <div class="header-logo" id="logo-btn">
+        <img src="logo.png" alt="QuizForge Logo" class="logo-img" style="height: 32px; width: 32px; border-radius: var(--radius-sm); object-fit: cover;">
+        <span class="logo-text">QuizForge</span>
+      </div>
+      <div class="header-actions">
+        <button id="theme-toggle-btn" class="btn btn-secondary btn-icon-only" title="Toggle Light/Dark Theme">
+          <svg id="theme-icon-dark" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          <svg id="theme-icon-light" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button id="import-export-btn" class="btn btn-secondary btn-icon-only" title="Export/Import Data">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        </button>
+        <div class="header-auth-container" id="header-auth-container">
+          <button id="btn-login-trigger" class="btn btn-secondary btn-sm" style="display: none;">Sign In</button>
+          <div class="user-profile-menu" id="user-profile-menu" style="display: none;">
+            <div class="user-avatar" id="user-avatar">👤</div>
+            <div class="dropdown-menu" id="dropdown-menu">
+              <div class="dropdown-header" id="user-email-display">user@example.com</div>
+              <button class="dropdown-item" id="btn-logout">Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- ========================================== -->
+      <!-- VIEW 0: LANDING PAGE                       -->
+      <!-- ========================================== -->
+      <section id="view-landing" class="app-view">
+        <div class="landing-hero card">
+          <div class="landing-grid">
+            <!-- Left Info Panel -->
+            <div class="landing-info">
+              <span class="landing-badge">⚡ Active Recall Platform</span>
+              <h1 class="landing-title">Mugging up won't help. <br><span class="color-accent">QuizForge does!</span></h1>
+              <p class="landing-intro">
+                Scientific studies show that taking MCQ quizzes helps you remember concepts faster and retain them longer than passive reading.
+              </p>
+              
+              <div class="landing-features">
+                <div class="landing-feature-item">
+                  <span class="feature-icon">📝</span>
+                  <div>
+                    <strong>Make Your Own Questions</strong>
+                    <p>Paste text or upload files. Our smart parser auto-corrects formatting.</p>
+                  </div>
+                </div>
+                <div class="landing-feature-item">
+                  <span class="feature-icon">👥</span>
+                  <div>
+                    <strong>Create Study Rooms</strong>
+                    <p>Invite friends with a single click and study together in real-time.</p>
+                  </div>
+                </div>
+                <div class="landing-feature-item">
+                  <span class="feature-icon">🏆</span>
+                  <div>
+                    <strong>Compare Scores</strong>
+                    <p>Check the live room leaderboard and see how your friends score.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Auth/Room Panel -->
+            <div class="landing-auth-card">
+              <div class="tab-buttons" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color);">
+                <button class="tab-btn active" id="landing-tab-personal" style="flex: 1; text-align: center; background: none; border: none; padding-bottom: 0.5rem;">Personal Study</button>
+                <button class="tab-btn" id="landing-tab-room" style="flex: 1; text-align: center; background: none; border: none; padding-bottom: 0.5rem;">Join a Room</button>
+              </div>
+
+              <!-- Tab: Personal Study -->
+              <div id="landing-content-personal" class="tab-content active">
+                <h3>Start Revision</h3>
+                <p style="margin-bottom: 1.2rem;">Sign in to create projects, parse questions, and host study rooms.</p>
+                
+                <!-- Direct Google login -->
+                <button id="btn-landing-google" class="btn btn-secondary btn-block btn-google-landing" style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.85rem; width: 100%;">
+                  <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+                  Continue with Google
+                </button>
+
+                <div class="auth-divider" style="text-align: center; margin: 1.5rem 0; position: relative;">
+                  <span style="background: var(--bg-card); padding: 0 10px; color: var(--text-secondary); font-size: 0.85rem; position: relative; z-index: 2;">OR</span>
+                  <div style="border-top: 1px dashed var(--border-color); position: absolute; width: 100%; top: 50%; z-index: 1;"></div>
+                </div>
+
+                <!-- Standard Login Modal Trigger -->
+                <button id="btn-landing-email-login" class="btn btn-primary btn-block" style="padding: 0.85rem; margin-bottom: 1.5rem; width: 100%;">
+                  Sign In with Email
+                </button>
+
+                <!-- Guest option -->
+                <button id="btn-landing-guest" class="btn btn-ghost btn-block" style="color: var(--text-secondary); font-size: 0.9rem; text-decoration: underline; width: 100%; background: none; border: none; cursor: pointer;">
+                  Continue locally (Offline Mode)
+                </button>
+              </div>
+
+              <!-- Tab: Join a Room -->
+              <div id="landing-content-room" class="tab-content" style="display: none;">
+                <h3>Join Study Room</h3>
+                <p style="margin-bottom: 1.2rem;">Enter Room ID and Password to study with friends.</p>
+                
+                <div class="form-group" style="margin-bottom: 1rem;">
+                  <label for="landing-room-id">Room ID</label>
+                  <input type="text" id="landing-room-id" class="form-control" placeholder="e.g. ROOM123" style="text-transform: uppercase;">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 1rem;">
+                  <label for="landing-room-password">Password</label>
+                  <input type="password" id="landing-room-password" class="form-control" placeholder="Room Passcode">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                  <label for="landing-room-nickname">Your Nickname</label>
+                  <input type="text" id="landing-room-nickname" class="form-control" placeholder="e.g. Alex" maxlength="25">
+                </div>
+
+                <button id="btn-landing-join-room" class="btn btn-accent btn-block" style="padding: 0.85rem; width: 100%;">
+                  Join &amp; Enter Room
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: DASHBOARD                          -->
+      <!-- ========================================== -->
+      <section id="view-dashboard" class="app-view active">
+        <!-- Dashboard Navigation Tabs -->
+        <div class="tab-buttons" style="margin-bottom: 2rem; display: flex; gap: 2rem; border-bottom: 1px solid var(--border-color);">
+          <button class="tab-btn active" id="dashboard-tab-solo" style="font-size: 1.1rem; padding-bottom: 0.75rem; background: none; border: none;">📚 Personal Study</button>
+          <button class="tab-btn" id="dashboard-tab-multiplayer" style="font-size: 1.1rem; padding-bottom: 0.75rem; background: none; border: none;">🌐 Live Study Rooms</button>
+        </div>
+
+        <!-- TAB CONTENT: SOLO STUDY -->
+        <div id="dashboard-content-solo">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">My Projects</h1>
+              <p class="view-subtitle">Organize your study goals, exams, and certifications</p>
+            </div>
+            <button id="create-project-btn" class="btn btn-primary">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              New Project
+            </button>
+          </div>
+
+          <!-- Dashboard Stats Grid -->
+          <div class="stats-bar">
+            <div class="stat-card">
+              <div class="stat-num" id="stat-projects-count">0</div>
+              <div class="stat-label">Total Projects</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-chapters-count">0</div>
+              <div class="stat-label">Chapters Created</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="stat-questions-count">0</div>
+              <div class="stat-label">Questions Loaded</div>
+            </div>
+          </div>
+
+          <!-- Projects Grid -->
+          <div id="projects-grid" class="projects-grid">
+            <!-- Populated by JS -->
+            <div class="empty-state" id="dashboard-empty-state">
+              <div class="empty-icon">📂</div>
+              <h3>No projects yet</h3>
+              <p>Create a project to start organizing your revision cards and MCQ questions.</p>
+              <button class="btn btn-primary btn-sm" onclick="app.showCreateProjectModal()">Create Project</button>
+            </div>
+          </div>
+
+          <!-- Quiz History Section -->
+          <div class="card history-card-panel">
+            <div class="card-header">
+              <h2>Recent Test History</h2>
+              <button id="btn-clear-history" class="btn btn-ghost btn-sm btn-danger" style="display: none;">Clear History</button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="history-table" id="history-table" style="display: none;">
+                  <thead>
+                    <tr>
+                      <th>Date & Time</th>
+                      <th>Project / Chapter</th>
+                      <th>Score</th>
+                      <th>Percentage</th>
+                      <th>Time Spent</th>
+                      <th>Mode</th>
+                    </tr>
+                  </thead>
+                  <tbody id="history-table-body">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+                <div class="empty-state-small" id="history-empty-state">
+                  <p>No tests taken yet. Launch a quiz to start tracking your performance history!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: MULTIPLAYER LIVE ROOMS -->
+        <div id="dashboard-content-multiplayer" style="display: none;">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">Live Study Rooms</h1>
+              <p class="view-subtitle">Host a room to study with friends or enter an active room ID</p>
+            </div>
+          </div>
+
+          <div class="room-setup-grid" style="margin-top: 1rem;">
+            <!-- Create Room Card -->
+            <div class="card panel-card">
+              <div class="card-header">
+                <h2>Host a New Room</h2>
+              </div>
+              <div class="card-body">
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                  <label for="create-room-id">Choose Room ID</label>
+                  <input type="text" id="create-room-id" class="form-control" placeholder="e.g. MICRO101" style="text-transform: uppercase;">
+                  <small style="opacity: 0.7; font-size: 0.8rem; margin-top: 4px; display: block; color: var(--text-secondary);">Alphanumeric characters only, e.g. BIO202, CHATROOM</small>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                  <label for="create-room-password">Room Password</label>
+                  <input type="password" id="create-room-password" class="form-control" placeholder="Required passcode to join">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                  <label for="create-room-chapter-select">Load Quiz Questions (Optional)</label>
+                  <select id="create-room-chapter-select" class="form-control-select" style="width: 100%; padding: 0.6rem; border-radius: var(--radius-sm); background: var(--bg-card-hover); color: var(--text-primary); border: 1px solid var(--border-color);">
+                    <option value="">-- Start Blank (Create/Paste inside Room) --</option>
+                    <!-- Dynamically populated options by JS -->
+                  </select>
+                </div>
+
+                <button id="btn-create-live-room" class="btn btn-accent btn-block btn-large">🚀 Host Study Room</button>
+              </div>
+            </div>
+
+            <!-- Join Room Card -->
+            <div class="card panel-card">
+              <div class="card-header">
+                <h2>Join an Existing Room</h2>
+              </div>
+              <div class="card-body">
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                  <label for="join-room-id-input">Room ID</label>
+                  <input type="text" id="join-room-id-input" class="form-control" placeholder="e.g. MICRO101" style="text-transform: uppercase;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.2rem;">
+                  <label for="join-room-password-input">Password</label>
+                  <input type="password" id="join-room-password-input" class="form-control" placeholder="Enter Room Passcode">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                  <label for="join-room-nickname-input">Your Nickname</label>
+                  <input type="text" id="join-room-nickname-input" class="form-control" placeholder="e.g. Alex" maxlength="25">
+                </div>
+
+                <button id="btn-join-live-room" class="btn btn-primary btn-block btn-large">Join Room</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: PROJECT DETAIL                     -->
+      <!-- ========================================== -->
+      <section id="view-project" class="app-view">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item" id="project-nav-back">← Back to Dashboard</span>
+        </div>
+
+        <div class="view-header">
+          <div>
+            <div class="title-with-actions">
+              <h1 class="view-title" id="project-detail-title">Project Name</h1>
+              <button id="rename-project-btn" class="btn btn-ghost btn-sm" title="Rename Project">✏️</button>
+              <button id="delete-project-btn" class="btn btn-ghost btn-sm btn-danger" title="Delete Project">🗑️</button>
+            </div>
+            <p class="view-subtitle" id="project-detail-desc">Study chapters and question collection</p>
+          </div>
+          <button id="create-chapter-btn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Chapter
+          </button>
+        </div>
+
+        <!-- Chapters List Container -->
+        <div class="chapters-container">
+          <div id="chapters-list" class="chapters-list">
+            <!-- Populated by JS -->
+          </div>
+          <div class="empty-state" id="project-empty-state" style="display: none;">
+            <div class="empty-icon">📖</div>
+            <h3>No chapters in this project</h3>
+            <p>Chapters help divide large subjects into manageable units like chapters, units, or modules.</p>
+            <button class="btn btn-primary btn-sm" id="project-empty-create-chapter">Create Chapter</button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: CHAPTER DETAIL                     -->
+      <!-- ========================================== -->
+      <section id="view-chapter" class="app-view">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item" id="chapter-nav-project">Project Name</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item active" id="chapter-nav-current">Chapter Name</span>
+        </div>
+
+        <div class="view-header">
+          <div>
+            <div class="title-with-actions">
+              <h1 class="view-title" id="chapter-detail-title">Chapter Name</h1>
+              <button id="rename-chapter-btn" class="btn btn-ghost btn-sm" title="Rename Chapter">✏️</button>
+              <button id="delete-chapter-btn" class="btn btn-ghost btn-sm btn-danger" title="Delete Chapter">🗑️</button>
+            </div>
+            <p class="view-subtitle" id="chapter-question-count">0 Questions loaded</p>
+          </div>
+          
+          <div class="chapter-actions-top">
+            <button id="btn-share-room" class="btn btn-secondary btn-large" style="display: none; margin-right: 0.5rem;">
+              🌐 Share Room
+            </button>
+            <button id="btn-start-quiz" class="btn btn-accent btn-large" disabled>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" class="btn-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Start Quiz
+            </button>
+          </div>
+        </div>
+
+        <!-- Split View: Left Column (Add/Upload Qs), Right Column (Loaded Qs list) -->
+        <div class="chapter-layout">
+          
+          <!-- Column 1: Parser / Input Panel -->
+          <div class="chapter-col-input">
+            <div class="card panel-card">
+              <div class="card-header">
+                <h2>Import Questions</h2>
+              </div>
+              <div class="card-body">
+                <div class="tab-buttons">
+                  <button class="tab-btn active" data-tab="tab-paste">Paste Plain Text</button>
+                  <button class="tab-btn" data-tab="tab-upload">Upload .TXT</button>
+                </div>
+
+                <!-- Tab: Paste Plain Text -->
+                <div id="tab-paste" class="tab-content active">
+                  <div class="form-group">
+                    <label for="raw-mcq-input">Format Rules for MCQ questions:</label>
+                    <pre class="format-guide">
+Supports Q: prefixes OR standard numbers:
+
+1. What is the CPU word size in 8051?
+a) 4-bit
+b) 8-bit
+c) 16-bit
+d) 32-bit
+Correct Answer: B
+
+Q: Which register works as program counter?
+A. PC
+B. DPTR
+ANS: A</pre>
+                    <textarea id="raw-mcq-input" rows="12" placeholder="Paste your questions here using the format above..." class="form-control text-mono"></textarea>
+                  </div>
+                  <button id="btn-parse-paste" class="btn btn-primary btn-block">⚡ Parse &amp; Auto-Import</button>
+                  <div id="paste-parse-status" class="upload-status-info"></div>
+                </div>
+
+                <!-- Tab: Upload TXT -->
+                <div id="tab-upload" class="tab-content">
+                  <div class="upload-zone" id="drop-zone">
+                    <div class="upload-icon">📄</div>
+                    <p>Drag & drop your <strong>.txt</strong> file here or click to browse</p>
+                    <input type="file" id="file-input" accept=".txt" style="display: none;">
+                    <button class="btn btn-secondary btn-sm" id="btn-browse-file">Browse Files</button>
+                  </div>
+                  <div id="upload-status" class="upload-status-info"></div>
+                  <p class="parser-auto-note">🤖 Smart parser will auto-correct common formatting issues</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Question List Panel -->
+          <div class="chapter-col-list">
+            <div class="card panel-card flex-col">
+              <div class="card-header list-header">
+                <h2>Questions in this Chapter</h2>
+                <button id="btn-clear-questions" class="btn btn-outline-danger btn-sm" style="display: none;">Clear All</button>
+              </div>
+              <div class="card-body scrollable flex-grow">
+                <div id="questions-list" class="questions-list-view">
+                  <!-- Loaded questions list generated by JS -->
+                  <div class="empty-state-small">
+                    <p>No questions imported yet. Use the parser panel on the left to add questions.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Room Leaderboard Card -->
+        <div class="card leaderboard-card" id="chapter-leaderboard-panel" style="display: none; margin-top: 2rem;">
+          <div class="card-header">
+            <h2>Room Live Leaderboard</h2>
+            <button id="btn-close-room" class="btn btn-outline-danger btn-sm">Close Room</button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="history-table" id="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Nickname</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th>Time Spent</th>
+                    <th>Date Submitted</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+              <div class="empty-state-small" id="leaderboard-empty-state">
+                <p>No submissions yet. Share the room link to invite participants!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 4: QUIZ ENGINE                        -->
+      <!-- ========================================== -->
+      <section id="view-quiz" class="app-view">
+        <div class="quiz-header-bar">
+          <div class="quiz-info-meta">
+            <span class="quiz-badge" id="quiz-meta-title">Microcontrollers / Unit 1</span>
+            <span class="quiz-progress-text" id="quiz-progress-text">Question 1 of 10</span>
+          </div>
+          <button id="btn-quit-quiz" class="btn btn-outline-danger btn-sm">Quit Quiz</button>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-bar-container">
+          <div id="quiz-progress-bar" class="progress-bar-fill" style="width: 10%;"></div>
+        </div>
+
+        <div class="quiz-workspace">
+          
+          <!-- Configuration Panel (Shown at start before first question) -->
+          <div id="quiz-config-panel" class="quiz-config-card card">
+            <h2>Quiz Settings</h2>
+            <div class="config-options">
+              <div class="form-group-flex">
+                <label>Timer Settings</label>
+                <select id="config-timer" class="form-control-select">
+                  <option value="0">No Timer (Relaxed)</option>
+                  <option value="15">15 Seconds per Question</option>
+                  <option value="30" selected>30 Seconds per Question</option>
+                  <option value="60">60 Seconds per Question</option>
+                </select>
+              </div>
+
+              <div class="form-group-flex">
+                <label>Question Options</label>
+                <div class="checkbox-row">
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="config-shuffle" checked>
+                    <span class="slider"></span>
+                    Shuffle Question Order
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group-flex">
+                <label>Study Mode</label>
+                <select id="config-mode" class="form-control-select">
+                  <option value="quiz" selected>Quiz Mode (Immediate correction & reveal)</option>
+                  <option value="exam">Exam Mode (Show correctness only at the very end)</option>
+                </select>
+              </div>
+            </div>
+            
+            <button id="btn-launch-quiz-session" class="btn btn-accent btn-block btn-large">Start Session</button>
+          </div>
+
+          <!-- Active Question Workspace -->
+          <div id="quiz-active-workspace" style="display: none;">
+            
+            <!-- Quiz Timer & Status -->
+            <div class="quiz-timer-bar">
+              <div class="timer-display" id="quiz-timer-display" style="display: none;">
+                <span class="timer-icon">⏳</span>
+                <span class="timer-seconds" id="timer-seconds">30</span>s
+              </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="question-display-card">
+              <div class="q-number" id="quiz-question-number">Question #1</div>
+              <h2 class="q-text" id="quiz-question-text">Loading question text...</h2>
+            </div>
+
+            <!-- Answers Grid -->
+            <div class="options-grid" id="quiz-options-container">
+              <!-- Dynamically populated options buttons -->
+            </div>
+
+            <!-- Quiz Controls -->
+            <div class="quiz-controls-row">
+              <div class="feedback-hint" id="quiz-feedback-text">Select an option to check your answer.</div>
+              <button id="btn-next-question" class="btn btn-primary" style="display: none;">Next Question →</button>
+              <button id="btn-submit-exam-answer" class="btn btn-primary" style="display: none;">Confirm & Next →</button>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ========================================== -->
+      <!-- VIEW 5: RESULTS VIEW                       -->
+      <!-- ========================================== -->
+      <section id="view-results" class="app-view">
+        <div class="results-layout">
+          
+          <!-- Results Score Ring Card -->
+          <div class="card result-card">
+            <div class="card-body center-content">
+              <h1 class="result-title">Quiz Completed!</h1>
+              
+              <!-- SVG Radial Score Tracker -->
+              <div class="score-ring-container">
+                <svg class="score-ring" viewBox="0 0 120 120">
+                  <circle class="score-ring-bg" cx="60" cy="60" r="50"></circle>
+                  <circle class="score-ring-fill" id="results-ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"></circle>
+                </svg>
+                <div class="score-text">
+                  <span class="score-percentage" id="results-percent">80%</span>
+                  <span class="score-ratio" id="results-ratio">8/10</span>
+                </div>
+              </div>
+
+              <div class="results-stats-row">
+                <div class="result-stat-item">
+                  <span class="color-success" id="results-correct-count">8</span>
+                  <label>Correct</label>
+                </div>
+                <div class="result-stat-item">
+                  <span class="color-danger" id="results-wrong-count">2</span>
+                  <label>Incorrect</label>
+                </div>
+                <div class="result-stat-item">
+                  <span id="results-time-elapsed">01:45</span>
+                  <label>Time Spent</label>
+                </div>
+              </div>
+
+              <div class="results-actions">
+                <button id="btn-restart-quiz" class="btn btn-primary">Retake Full Quiz</button>
+                <button id="btn-retake-wrong" class="btn btn-accent" style="display: none;">Retake Incorrect Only</button>
+                <button id="btn-results-back" class="btn btn-secondary">Back to Chapter</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Review Answers Accordion list -->
+          <div class="card review-card flex-col">
+            <div class="card-header">
+              <h2>Review Answers</h2>
+            </div>
+            <div class="card-body scrollable flex-grow">
+              <div id="results-review-list" class="review-list">
+                <!-- Javascript builds the questions list with user vs correct marker -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 6: JOIN ROOM                          -->
+      <!-- ========================================== -->
+      <section id="view-join-room" class="app-view">
+        <div class="join-room-container card">
+          <div class="center-content">
+            <img src="logo.png" alt="QuizForge Logo" class="room-icon" style="height: 64px; width: 64px; border-radius: var(--radius-md); margin-bottom: 1rem; object-fit: cover;">
+            <h1 id="join-room-title" class="result-title">Loading Room...</h1>
+            <p id="join-room-desc" class="view-subtitle">Please wait while we fetch the quiz details.</p>
+            
+            <div class="room-meta-info" id="join-room-meta" style="display: none; margin-bottom: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
+              <span class="badge-score badge-score-high"><span id="join-room-q-count">0</span> Questions</span>
+              <span class="badge-score badge-score-mid">Hosted by <span id="join-room-owner">Author</span></span>
+            </div>
+
+            <div id="join-room-setup" style="display: none; width: 100%; max-width: 400px; margin-top: 1.5rem;">
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="participant-name-input" style="display: block; margin-bottom: 0.5rem; text-align: center;">Enter your Name / Nickname</label>
+                <input type="text" id="participant-name-input" class="form-control text-center" placeholder="e.g. Alex, Student5" maxlength="25" style="font-size: 1.2rem; padding: 0.75rem;">
+              </div>
+              <div class="form-group" style="margin-bottom: 1.5rem;" id="join-room-password-container">
+                <label for="participant-password-input" style="display: block; margin-bottom: 0.5rem; text-align: center;">Room Password</label>
+                <input type="password" id="participant-password-input" class="form-control text-center" placeholder="Enter Room Passcode" style="font-size: 1.2rem; padding: 0.75rem;">
+              </div>
+              <button id="btn-enter-room" class="btn btn-accent btn-block btn-large">Join &amp; Start Quiz</button>
+            </div>
+            
+            <button id="btn-leave-room" class="btn btn-secondary" style="margin-top: 2rem;">Back to Dashboard</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 7: LIVE STUDY ROOM                    -->
+      <!-- ========================================== -->
+      <section id="view-live-room" class="app-view">
+        <div class="breadcrumb">
+          <span class="breadcrumb-item" id="btn-exit-live-room">← Exit Room</span>
+        </div>
+
+        <div class="view-header room-header" style="margin-bottom: 1.5rem;">
+          <div>
+            <span class="landing-badge" style="background: var(--accent-glow); color: var(--accent); margin-bottom: 0.5rem; border: 1px solid rgba(6, 182, 212, 0.2);">🟢 Live study room</span>
+            <h1 class="view-title" id="live-room-title-display">Room Name</h1>
+            <p class="view-subtitle">Room ID: <strong id="live-room-id-display" class="color-accent">...</strong> | Password: <span id="live-room-password-display" style="font-family: monospace;">...</span></p>
+          </div>
+          <div class="chapter-actions-top" style="display: flex; gap: 0.5rem;">
+            <button id="btn-copy-live-room-link" class="btn btn-secondary btn-sm">🔗 Share Room</button>
+            <button id="btn-close-live-room-db" class="btn btn-outline-danger btn-sm" style="display: none;">Close Room</button>
+          </div>
+        </div>
+
+        <!-- Room split layout -->
+        <div class="room-grid-layout">
+          <!-- Left Column: Real-time Chat -->
+          <div class="room-chat-card card flex-col">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <h2>💬 Live Chat</h2>
+              <span id="live-room-users-count" class="badge-score badge-score-mid" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;" title="Active Learners in Room">👥 1 Online</span>
+            </div>
+            <div id="live-room-users-bar" style="padding: 0.6rem 1rem; background: rgba(0, 0, 0, 0.12); border-bottom: 1px solid var(--border-color); display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; font-size: 0.82rem;">
+              <span style="opacity: 0.7; font-weight: 600;">Active Learners:</span>
+              <div id="live-room-active-users-list" style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+                <!-- Nicknames populated by JS -->
+              </div>
+            </div>
+            <div class="card-body flex-grow chat-window" id="live-chat-messages">
+              <!-- Messages populated by JS -->
+            </div>
+            <div class="chat-input-row" style="padding: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem;">
+              <input type="text" id="live-chat-input" class="form-control" placeholder="Send a message..." style="flex: 1;">
+              <button id="btn-send-live-chat" class="btn btn-primary">Send</button>
+            </div>
+          </div>
+
+          <!-- Middle Column: Room Quiz & Leaderboard -->
+          <div class="room-quiz-card flex-col">
+            <!-- Quiz Status -->
+            <div class="card panel-card" style="margin-bottom: 1.5rem;">
+              <div class="card-header">
+                <h2>📝 Room Quiz</h2>
+              </div>
+              <div class="card-body" style="text-align: center; padding: 2rem 1.5rem;">
+                <h3 id="live-room-quiz-title" style="font-size: 1.4rem; margin-bottom: 0.5rem;">Quiz Title</h3>
+                <p id="live-room-quiz-questions-count" class="view-subtitle" style="margin-bottom: 1.5rem;">0 MCQ Questions Loaded</p>
+                <button id="btn-start-live-room-quiz" class="btn btn-accent btn-large btn-block" disabled>🚀 Start Quiz Session</button>
+              </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="card panel-card flex-grow">
+              <div class="card-header">
+                <h2>🏆 Live Leaderboard</h2>
+              </div>
+              <div class="card-body scrollable flex-grow">
+                <div class="table-responsive">
+                  <table class="history-table" id="live-room-leaderboard-table" style="display: none;">
+                    <thead>
+                      <tr>
+                        <th>Rank</th>
+                        <th>Nickname</th>
+                        <th>Score</th>
+                        <th>Percentage</th>
+                        <th>Time Spent</th>
+                      </tr>
+                    </thead>
+                    <tbody id="live-room-leaderboard-tbody">
+                      <!-- Dynamic rows -->
+                    </tbody>
+                  </table>
+                  <div class="empty-state-small" id="live-room-leaderboard-empty">
+                    <p>No scores submitted yet. Be the first to submit!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Host Controls (Only displayed if current user is owner) -->
+          <div class="room-host-card card flex-col" id="live-room-host-controls" style="display: none;">
+            <div class="card-header">
+              <h2>🛠️ Host Panel</h2>
+            </div>
+            <div class="card-body scrollable flex-grow" style="padding: 1.5rem;">
+              <div class="form-group" style="margin-bottom: 1.2rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Import New Questions</label>
+                <textarea id="live-room-raw-input" rows="8" class="form-control text-mono" placeholder="Paste questions here in Q: A. B. C. ANS: format..." style="font-size: 0.85rem;"></textarea>
+              </div>
+              <button id="btn-live-room-parse-paste" class="btn btn-primary btn-block" style="margin-bottom: 1.5rem;">⚡ Parse &amp; Update Quiz</button>
+              
+              <div style="border-top: 1px solid var(--border-color); padding-top: 1.2rem;">
+                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block; color: var(--danger);">Danger Zone</label>
+                <button id="btn-live-room-clear-quiz" class="btn btn-outline-danger btn-block btn-sm">Clear Quiz Questions</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- ========================================== -->
+  <!-- MODAL DIALOGS                              -->
+  <!-- ========================================== -->
+
+  <!-- Modal Backdrop -->
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+
+  <!-- Create Project Modal -->
+  <div class="modal" id="modal-create-project">
+    <div class="modal-header">
+      <h2>Create New Project</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="project-name-input">Project Name</label>
+        <input type="text" id="project-name-input" class="form-control" placeholder="e.g. Microcontroller Exam, AWS Cloud Practitioner">
+      </div>
+      <div class="form-group">
+        <label for="project-desc-input">Description (Optional)</label>
+        <input type="text" id="project-desc-input" class="form-control" placeholder="e.g. Exam on June 25th, covering hardware architecture">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-project">Create Project</button>
+    </div>
+  </div>
+
+  <!-- Create Chapter Modal -->
+  <div class="modal" id="modal-create-chapter">
+    <div class="modal-header">
+      <h2>Add New Chapter</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="chapter-name-input">Chapter / Unit Title</label>
+        <input type="text" id="chapter-name-input" class="form-control" placeholder="e.g. Unit 1: Hardware Architecture">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-chapter">Add Chapter</button>
+    </div>
+  </div>
+
+  <!-- Rename Dialog (Generic) -->
+  <div class="modal" id="modal-rename">
+    <div class="modal-header">
+      <h2 id="rename-modal-title">Rename</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="rename-input" id="rename-input-label">New Name</label>
+        <input type="text" id="rename-input" class="form-control" placeholder="">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-rename">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- Export/Import Data Modal -->
+  <div class="modal" id="modal-import-export">
+    <div class="modal-header">
+      <h2>Backup & Portability</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 1.2rem; font-size: 0.9rem; opacity: 0.85;">
+        Export all your projects, chapters, and questions to a single JSON file. You can load this backup onto other devices.
+      </p>
+      
+      <div class="backup-actions">
+        <button id="btn-export-backup" class="btn btn-primary btn-block">
+          📥 Download JSON Backup
+        </button>
+      </div>
+      
+      <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+      
+      <div class="form-group">
+        <label>Import backup file (.json):</label>
+        <div class="file-import-row">
+          <input type="file" id="backup-file-input" accept=".json" class="form-control-file">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-block" onclick="app.closeModals()">Close</button>
+    </div>
+  </div>
+
+  <!-- Auth Modal -->
+  <div class="modal" id="modal-auth">
+    <div class="modal-header">
+      <h2 id="auth-modal-title">Sign In</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-buttons" style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem;">
+        <button class="tab-btn active" id="auth-tab-signin" style="flex: 1;">Login</button>
+        <button class="tab-btn" id="auth-tab-signup" style="flex: 1;">Register</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <div id="auth-form-signin" class="tab-content active">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••">
+        </div>
+        <button id="btn-auth-signin" class="btn btn-primary btn-block" style="margin-top: 1rem;">Sign In</button>
+      </div>
+
+      <!-- Sign Up Form -->
+      <div id="auth-form-signup" class="tab-content">
+        <div class="form-group">
+          <label for="register-email">Email Address</label>
+          <input type="email" id="register-email" class="form-control" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="register-password">Password (min. 6 chars)</label>
+          <input type="password" id="register-password" class="form-control" placeholder="••••••••">
+        </div>
+        <button id="btn-auth-signup" class="btn btn-primary btn-block" style="margin-top: 1rem;">Create Account</button>
+      </div>
+
+      <div class="auth-divider" style="text-align: center; margin: 1.5rem 0; position: relative;">
+        <span style="background: var(--bg-card); padding: 0 10px; color: var(--text-secondary); font-size: 0.85rem; position: relative; z-index: 2;">OR</span>
+        <div style="border-top: 1px dashed var(--border-color); position: absolute; width: 100%; top: 50%; z-index: 1;"></div>
+      </div>
+
+      <!-- Google Login -->
+      <button id="btn-auth-google" class="btn btn-secondary btn-block" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Sign In with Google
+      </button>
+    </div>
+    <div class="modal-footer" style="font-size: 0.8rem; text-align: center; opacity: 0.8; justify-content: center; border-top: 1px solid var(--border-color);">
+      Sign in to manage and share rooms.
+    </div>
+  </div>
+
+  <!-- Share Room Modal -->
+  <div class="modal" id="modal-share-room">
+    <div class="modal-header">
+      <h2>Share Quiz Room</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 1.2rem; font-size: 0.9rem; opacity: 0.85;">
+        Invite others to take this quiz. Their scores will show up in real-time in the leaderboard for this chapter.
+      </p>
+      
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+        <input type="text" id="share-room-url" class="form-control" readonly style="flex: 1; font-family: monospace; font-size: 0.9rem;">
+        <button id="btn-copy-share-url" class="btn btn-primary">Copy</button>
+      </div>
+
+      <div style="text-align: center;">
+        <span class="badge-score badge-score-high" style="font-size: 0.9rem; padding: 0.5rem 1rem;">Active Room</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-block" onclick="app.closeModals()">Close</button>
+    </div>
+  </div>
+
+  <!-- Peer Review Modal -->
+  <div class="modal" id="modal-peer-review" style="max-width: 650px;">
+    <div class="modal-header">
+      <h2 id="peer-review-modal-title">Review Answers</h2>
+      <button class="modal-close" onclick="app.closeModals()">&times;</button>
+    </div>
+    <div class="modal-body scrollable" style="max-height: 65vh; overflow-y: auto;">
+      <div id="peer-review-meta-summary" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <span class="badge-score" id="peer-review-score-badge">Score: -</span>
+        <span class="badge-score badge-score-mid" id="peer-review-time-badge">Time: -</span>
+      </div>
+      <div id="peer-review-list" class="review-list">
+        <!-- Javascript builds the questions list with classmate vs correct marker -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary btn-block" onclick="app.closeModals()">Close Review</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Firebase SDK Compatibility Version -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <!-- Javascript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
